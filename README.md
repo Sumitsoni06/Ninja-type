@@ -31,10 +31,10 @@ The application runs entirely inside the user's web browser. It uses JavaScript 
 Here is a look at the project interface and features:
 
 ### 1. Main Dashboard Screen Before Typing
-![Main Interface Dashboard](screenshot1.png)
+![Main Interface Dashboard](typing pic 1.png)
 
 ### 2. Active Test Screen with Real-Time Scores
-![Live Performance Stats](screenshot2.png)
+![Live Performance Stats](typing pic 2.png)
 
 ---
 
