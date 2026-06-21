@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥷 Ninja Type - Speed Challenge</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Custom smooth pulse glow effect for the system container */
+        .neon-glow {
+            box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.15), 0 0 15px -5px rgba(99, 102, 241, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col items-center justify-center p-6 font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-200">
+
+    <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-3xl w-full bg-[#131a2c]/80 backdrop-blur-xl rounded-2xl border border-slate-800 p-8 neon-glow relative overflow-hidden">
+        
+        <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-500"></div>
+
+        <div class="flex items-center justify-between mb-8 relative z-10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-500/10 border border-indigo-500/30 rounded-xl flex items-center justify-center text-indigo-400 shadow-inner group">
+                    <svg class="w-6 h-6 animate-[spin_6s_linear_infinite]" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L14.5 8.5L21 8.5L16 12.5L18.5 19L12 15L5.5 19L8 12.5L3 8.5L9.5 8.5Z"/>
+                        <circle cx="12" cy="12" r="2" class="fill-[#131a2c]"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-wider bg-gradient-to-r from-indigo-400 via-purple-400 to-slate-200 bg-clip-text text-transparent uppercase">
+                        Ninja Type
+                    </h1>
+                    <p class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Tactical Typing Engine v2.0</p>
+                </div>
+            </div>
+            
+            <button onclick="resetTest()" class="bg-slate-800 hover:bg-slate-700/80 text-slate-300 hover:text-white text-xs font-bold uppercase tracking-wider py-2.5 px-5 rounded-xl border border-slate-700 hover:border-slate-600 transition duration-200 cursor-pointer shadow-sm">
+                🔄 Restart System
+            </button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 mb-8 relative z-10">
+            <div class="bg-[#0f1524]/60 border border-slate-800/80 p-4 rounded-xl relative group overflow-hidden">
+                <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-1">Time Clock</span>
+                <div id="timer" class="text-3xl font-black text-indigo-400 tracking-tight font-mono">30<span class="text-sm font-normal text-slate-500 ml-0.5">s</span></div>
+                <div class="absolute bottom-0 left-0 right-0 h-[2px] bg-indigo-500/30"></div>
+            </div>
+            <div class="bg-[#0f1524]/60 border border-slate-800/80 p-4 rounded-xl relative group overflow-hidden">
+                <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-1">Speed Index</span>
+                <div id="wpm" class="text-3xl font-black text-emerald-400 tracking-tight font-mono">0<span class="text-xs font-normal text-slate-500 ml-0.5">WPM</span></div>
+                <div class="absolute bottom-0 left-0 right-0 h-[2px] bg-emerald-500/30"></div>
+            </div>
+            <div class="bg-[#0f1524]/60 border border-slate-800/80 p-4 rounded-xl relative group overflow-hidden">
+                <span class="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-1">Accuracy</span>
+                <div id="accuracy" class="text-3xl font-black text-amber-400 tracking-tight font-mono">100<span class="text-xs font-normal text-slate-500 ml-0.5">%</span></div>
+                <div class="absolute bottom-0 left-0 right-0 h-[2px] bg-amber-500/30"></div>
+            </div>
+        </div>
+
+        <div id="textContainer" class="bg-[#0f1524]/90 border border-slate-800 p-6 rounded-xl text-xl leading-relaxed tracking-wide select-none mb-6 font-mono whitespace-pre-wrap break-words min-h-[120px] transition-all duration-300"></div>
+
+        <input 
+            type="text" 
+            id="keyboardInput" 
+            class="absolute opacity-0 pointer-events-none"
+            autocomplete="off" 
+            autocorrect="off" 
+            autocapitalize="off" 
+            spellcheck="false">
+
+        <div 
+            id="focusBox" 
+            onclick="focusInput()" 
+            class="w-full py-4 text-center border border-dashed border-slate-700 bg-[#0f1524]/30 rounded-xl cursor-pointer text-slate-400 hover:text-indigo-400 hover:border-indigo-500/50 transition-all duration-300 text-xs font-bold uppercase tracking-wider relative z-10">
+            🎯 Click to initialize keyboard tracking matrix
+        </div>
+    </div>
+
+    <script>
+        const quotes = [
+            "Technology moves fast, but clean code and solid logic last forever.",
+            "The best way to predict the future is to write the code that builds it.",
+            "Simplicity is the soul of efficiency, especially in software design.",
+            "Every grand system architecture starts with a single line of clear syntax.",
+            "An expert engineer is simply a novice student who refused to quit learning."
+        ];
+
+        let targetText = "";
+        let timer = 30;
+        let timeElapsed = 0;
+        let totalKeysPressed = 0;
+        let incorrectKeys = 0;
+        let isTimerRunning = false;
+        let intervalId = null;
+
+        const textContainer = document.getElementById("textContainer");
+        const keyboardInput = document.getElementById("keyboardInput");
+        const focusBox = document.getElementById("focusBox");
+        const timerDisplay = document.getElementById("timer");
+        const wpmDisplay = document.getElementById("wpm");
+        const accuracyDisplay = document.getElementById("accuracy");
+
+        function initTest() {
+            targetText = quotes[Math.floor(Math.random() * quotes.length)];
+            textContainer.innerHTML = "";
+            
+            targetText.split("").forEach(char => {
+                const span = document.createElement("span");
+                span.innerText = char;
+                span.classList.add("text-slate-600", "transition-colors", "duration-100");
+                textContainer.appendChild(span);
+            });
+            
+            keyboardInput.value = "";
+        }
+
+        function focusInput() {
+            keyboardInput.focus();
+            focusBox.innerText = "⚡ Connection established. System reading keystrokes...";
+            focusBox.className = "w-full py-4 text-center border border-indigo-500/30 bg-indigo-950/10 rounded-xl text-indigo-400 text-xs font-bold uppercase tracking-wider transition-all duration-300";
+        }
+
+        textContainer.addEventListener("click", focusInput);
+
+        keyboardInput.addEventListener("input", () => {
+            const currentInputValue = keyboardInput.value;
+            const inputLength = currentInputValue.length;
+            const characterSpans = textContainer.querySelectorAll("span");
+
+            if (!isTimerRunning && inputLength > 0) {
+                startTimer();
+            }
+
+            totalKeysPressed = inputLength;
+            incorrectKeys = 0;
+
+            characterSpans.forEach((span, index) => {
+                const typedChar = currentInputValue[index];
+
+                if (typedChar == null) {
+                    span.className = "text-slate-600";
+                } else if (typedChar === span.innerText) {
+                    span.className = "text-emerald-400 bg-emerald-500/5 font-medium";
+                } else {
+                    span.className = "text-rose-400 bg-rose-500/10 font-bold border-b border-rose-500/50";
+                    incorrectKeys++;
+                }
+            });
+
+            if (totalKeysPressed > 0) {
+                let accurateHits = totalKeysPressed - incorrectKeys;
+                let calculatedAccuracy = Math.round((accurateHits / totalKeysPressed) * 100);
+                accuracyDisplay.innerHTML = `${Math.max(0, calculatedAccuracy)}<span class="text-xs font-normal text-slate-500 ml-0.5">%</span>`;
+            }
+
+            if (currentInputValue === targetText) {
+                endTest();
+            }
+        });
+
+        function startTimer() {
+            isTimerRunning = true;
+            intervalId = setInterval(() => {
+                timer--;
+                timeElapsed++;
+                timerDisplay.innerHTML = `${timer}<span class="text-sm font-normal text-slate-500 ml-0.5">s</span>`;
+
+                if (timeElapsed > 0) {
+                    let calculatedWpm = Math.round((totalKeysPressed / 5) / (timeElapsed / 60));
+                    wpmDisplay.innerHTML = `${Math.max(0, calculatedWpm)}<span class="text-xs font-normal text-slate-500 ml-0.5">WPM</span>`;
+                }
+
+                if (timer === 0) {
+                    endTest();
+                }
+            }, 1000);
+        }
+
+        function endTest() {
+            clearInterval(intervalId);
+            keyboardInput.disabled = true;
+            focusBox.innerText = "🏁 Execution terminated. Challenge evaluated.";
+            focusBox.className = "w-full py-4 text-center border border-emerald-500/40 bg-emerald-950/20 rounded-xl text-emerald-400 text-xs font-bold uppercase tracking-wider shadow-md";
+        }
+
+        function resetTest() {
+            clearInterval(intervalId);
+            timer = 30;
+            timeElapsed = 0;
+            totalKeysPressed = 0;
+            incorrectKeys = 0;
+            isTimerRunning = false;
+            keyboardInput.disabled = false;
+            
+            timerDisplay.innerHTML = '30<span class="text-sm font-normal text-slate-500 ml-0.5">s</span>';
+            wpmDisplay.innerHTML = '0<span class="text-xs font-normal text-slate-500 ml-0.5">WPM</span>';
+            accuracyDisplay.innerHTML = '100<span class="text-xs font-normal text-slate-500 ml-0.5">%</span>';
+            
+            focusBox.innerText = "🎯 Click to initialize keyboard tracking matrix";
+            focusBox.className = "w-full py-4 text-center border border-dashed border-slate-700 bg-[#0f1524]/30 rounded-xl cursor-pointer text-slate-400 hover:text-indigo-400 hover:border-indigo-500/50 transition-all duration-300 text-xs font-bold uppercase tracking-wider";
+            
+            initTest();
+        }
+
+        initTest();
+    </script>
+</body>
+</html>
